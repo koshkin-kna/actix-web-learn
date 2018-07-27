@@ -1,22 +1,42 @@
+//! Actix web is a small, pragmatic, and extremely fast web framework
+//! for Rust.
+//!
+//! ```rust
+//! use actix_web::{server, App, Path, Responder};
+//! # use std::thread;
+//!
+//! fn index(info: Path<(String, u32)>) -> impl Responder {
+//!     format!("Hello {}! id:{}", info.0, info.1)
+//! }
+//!
+//! fn main() {
+//!     # thread::spawn(|| {
+//!     server::new(|| {
+//!         App::new().resource("/{name}/{id}/index.html", |r| r.with(index))
+//!     }).bind("127.0.0.1:8080")
+//!         .unwrap()
+//!         .run();
+//!     # });
+//! }
+//! ```
+//!
+//! ## Documentation & community resources
+//!
+//! Besides the API documentation (which you are currently looking
+//! at!), several other resources are available:
+//!
+//! * [Link base actix-web](https://actix.rs/)
+//!
+//! To get started navigating the API documentation you may want to
+//! consider looking at the following pages:
+
+
 extern crate actix_web;
 
-pub mod middleware {
-    use actix_web::middleware::{Middleware, Started};
-    use actix_web::{HttpRequest, Result};
+pub mod tmp_engine;
+pub mod middleware;
 
-    pub trait TemplateEngine {
-        fn template_reload(&self);
-    }
 
-    pub struct MiddlewareTemplateEngineReload;
-
-    impl<T: TemplateEngine> Middleware<T> for MiddlewareTemplateEngineReload {
-        fn start(&self, req: &mut HttpRequest<T>) -> Result<Started> {
-            req.state().template_reload();
-            Ok(Started::Done)
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {

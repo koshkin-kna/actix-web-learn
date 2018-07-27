@@ -3,7 +3,7 @@ use actix_web::{pred, App, HttpRequest, HttpResponse};
 use std::cell::RefCell;
 use tera;
 use normalize_path::NormalizePathCustom;
-use actix_web_ult::middleware::TemplateEngine;
+use actix_web_ult::tmp_engine::TemplateEngine;
 
 // If debug true
 #[cfg(debug_assertions)] 
