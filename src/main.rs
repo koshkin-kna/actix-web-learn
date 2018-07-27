@@ -16,7 +16,6 @@ pub mod normalize_path;
 
 fn main() {
 
-    // if debug true
     #[cfg(debug_assertions)] {
         env::set_var("RUST_LOG", "actix_web=debug");
         env::set_var("RUST_BACKTRACE", "0");

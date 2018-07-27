@@ -5,14 +5,12 @@ use tera;
 use normalize_path::NormalizePathCustom;
 use actix_web_ult::tmp_engine::TemplateEngine;
 
-// If debug true
 #[cfg(debug_assertions)] 
 use actix_web_ult::middleware::MiddlewareTemplateEngineReload;
 #[cfg(debug_assertions)]
 use actix_web::fs;
 #[cfg(debug_assertions)] 
 use actix_web::{middleware};
-
 
 pub struct AppState {
     pub template: RefCell<tera::Tera>,
@@ -23,7 +21,6 @@ impl TemplateEngine for AppState {
         self.template.borrow_mut().full_reload().unwrap();
     }
 }
-
 
 fn index(req: HttpRequest<AppState>) -> HttpResponse {
     let template = req.state().template.borrow();
@@ -36,22 +33,23 @@ fn index(req: HttpRequest<AppState>) -> HttpResponse {
         .body(result)
 }
 
-
 pub fn create_app() -> App<AppState> {
     let app = App::with_state(AppState {
         template: RefCell::new(compile_templates!("./src/templates/**/*")),
     });
 
-    // If debug true
     #[cfg(debug_assertions)]
-    let app = app.middleware(middleware::Logger::default())
-    .middleware(MiddlewareTemplateEngineReload)
-    .handler("/static", fs::StaticFiles::new("./src/static/build").show_files_listing(),);
+    let app = app.middleware(middleware::Logger::default());
+    #[cfg(debug_assertions)]
+    let app = app.middleware(MiddlewareTemplateEngineReload);
     
+    let app = app.resource("/", |r| r.f(index))
+        .resource("/{test}/", |r| r.f(index)); 
 
-    app.resource("/", |r| r.f(index))
-        .resource("/{test}/", |r| r.f(index))
-        .default_resource(|r| {
+    #[cfg(debug_assertions)]
+    let app = app.handler("/static", fs::StaticFiles::new("./src/static/build").show_files_listing(),);
+    
+    app.default_resource(|r| {
             r.h(NormalizePathCustom::default());
             r.route()
                 .filter(pred::Not(pred::Get()))
