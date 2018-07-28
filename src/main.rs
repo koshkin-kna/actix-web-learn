@@ -3,19 +3,19 @@ extern crate actix_web;
 extern crate actix_web_ult;
 extern crate env_logger;
 extern crate regex;
-#[macro_use] extern crate tera;
+#[macro_use] 
+extern crate tera;
+
 use actix_web::server;
 
-// if debug true
 #[cfg(debug_assertions)] 
 use std::env;
 
 pub mod app;
 pub mod normalize_path;
-
+pub mod urls;
 
 fn main() {
-
     #[cfg(debug_assertions)] {
         env::set_var("RUST_LOG", "actix_web=debug");
         env::set_var("RUST_BACKTRACE", "0");

@@ -1,9 +1,9 @@
-use actix_web::http::{ContentEncoding};
-use actix_web::{pred, App, HttpRequest, HttpResponse};
+use actix_web::{pred, App, HttpResponse};
 use std::cell::RefCell;
 use tera;
 use normalize_path::NormalizePathCustom;
 use actix_web_ult::tmp_engine::TemplateEngine;
+use urls::urls_pattern;
 
 #[cfg(debug_assertions)] 
 use actix_web_ult::middleware::MiddlewareTemplateEngineReload;
@@ -22,17 +22,7 @@ impl TemplateEngine for AppState {
     }
 }
 
-fn index(req: HttpRequest<AppState>) -> HttpResponse {
-    let template = req.state().template.borrow();
-    let mut context = tera::Context::new();
-    context.add("vat_rate", &0.20);
-    let result = template.render("admin/login.html", &context).unwrap();
-    HttpResponse::Ok()
-        .content_encoding(ContentEncoding::Gzip)
-        .content_type("text/html; charset=utf-8")
-        .body(result)
-}
-
+/// Функция создаёт Application
 pub fn create_app() -> App<AppState> {
     let app = App::with_state(AppState {
         template: RefCell::new(compile_templates!("./src/templates/**/*")),
@@ -43,8 +33,7 @@ pub fn create_app() -> App<AppState> {
     #[cfg(debug_assertions)]
     let app = app.middleware(MiddlewareTemplateEngineReload);
     
-    let app = app.resource("/", |r| r.f(index))
-        .resource("/{test}/", |r| r.f(index)); 
+    let app = urls_pattern(app);
 
     #[cfg(debug_assertions)]
     let app = app.handler("/static", fs::StaticFiles::new("./src/static/build").show_files_listing(),);
