@@ -1,12 +1,12 @@
 use actix_web::http::{header, StatusCode};
 use regex::Regex;
 use actix_web::{HttpRequest, HttpResponse, dev::Handler};
-use app::AppState;
+use tmp_engine::TemplateEngine;
 use tera;
 use actix_web::http::{ContentEncoding};
 
 
-pub struct NormalizePathCustom {
+pub struct NormalizePath {
     append: bool,
     merge: bool,
     re_merge: Regex,
@@ -14,12 +14,12 @@ pub struct NormalizePathCustom {
     not_found: StatusCode,
 }
 
-impl Default for NormalizePathCustom {
+impl Default for NormalizePath {
     /// Create default `NormalizePath` instance, *append* is set to *true*,
     /// *merge* is set to *true* and *redirect* is set to
     /// `StatusCode::MOVED_PERMANENTLY`
-    fn default() -> NormalizePathCustom {
-        NormalizePathCustom {
+    fn default() -> NormalizePath {
+        NormalizePath {
             append: true,
             merge: true,
             re_merge: Regex::new("//+").unwrap(),
@@ -29,10 +29,10 @@ impl Default for NormalizePathCustom {
     }
 }
 
-impl NormalizePathCustom {
+impl NormalizePath {
     /// Create new `NormalizePath` instance
-    pub fn new(append: bool, merge: bool, redirect: StatusCode) -> NormalizePathCustom {
-        NormalizePathCustom {
+    pub fn new(append: bool, merge: bool, redirect: StatusCode) -> NormalizePath {
+        NormalizePath {
             append,
             merge,
             redirect,
@@ -42,10 +42,10 @@ impl NormalizePathCustom {
     }
 }
 
-impl Handler<AppState> for NormalizePathCustom {
+impl<T: TemplateEngine> Handler<T> for NormalizePath {
     type Result = HttpResponse;
 
-    fn handle(&mut self, req: HttpRequest<AppState>) -> Self::Result {
+    fn handle(&mut self, req: HttpRequest<T>) -> Self::Result {
         if let Some(router) = req.router() {
             let query = req.query_string();
             if self.merge {
@@ -123,9 +123,9 @@ impl Handler<AppState> for NormalizePathCustom {
                 }
             }
         }
-        let template = req.state().template.borrow();
+        let template_engine = req.state().get_engine();
         let context = tera::Context::new();
-        let result = template.render("404.html", &context).unwrap();
+        let result = template_engine.render("404.html", &context).unwrap();
         HttpResponse::build(self.not_found)
         .content_encoding(ContentEncoding::Gzip)
         .content_type("text/html")

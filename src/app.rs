@@ -1,7 +1,7 @@
 use actix_web::{pred, App, HttpResponse};
-use std::cell::RefCell;
+use std::cell::{RefMut, Ref, RefCell};
 use tera;
-use normalize_path::NormalizePathCustom;
+use actix_web_ult::handlers::NormalizePath;
 use actix_web_ult::tmp_engine::TemplateEngine;
 use urls::urls_pattern;
 
@@ -17,8 +17,11 @@ pub struct AppState {
 }
 
 impl TemplateEngine for AppState {
-    fn template_reload(&self) {
-        self.template.borrow_mut().full_reload().unwrap();
+    fn get_engine_mut(&self) -> RefMut<tera::Tera> {
+        self.template.borrow_mut()
+    }
+    fn get_engine(&self) -> Ref<tera::Tera> {
+        self.template.borrow()
     }
 }
 
@@ -39,7 +42,7 @@ pub fn create_app() -> App<AppState> {
     let app = app.handler("/static", fs::StaticFiles::new("./src/static/build").show_files_listing(),);
     
     app.default_resource(|r| {
-            r.h(NormalizePathCustom::default());
+            r.h(NormalizePath::default());
             r.route()
                 .filter(pred::Not(pred::Get()))
                 .f(|_req| HttpResponse::MethodNotAllowed());

@@ -12,7 +12,6 @@ use actix_web::server;
 use std::env;
 
 pub mod app;
-pub mod normalize_path;
 pub mod urls;
 
 fn main() {

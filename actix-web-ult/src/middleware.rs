@@ -10,7 +10,7 @@ pub struct MiddlewareTemplateEngineReload;
 impl<T: TemplateEngine> Middleware<T> for MiddlewareTemplateEngineReload {
     /// Реализация типажа Middleware (start), то есть перезагружает шаблон на входе request
     fn start(&self, req: &mut HttpRequest<T>) -> Result<Started> {
-        req.state().template_reload();
+        let _ = req.state().get_engine_mut().full_reload();
         Ok(Started::Done)
     }
 }

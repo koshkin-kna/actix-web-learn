@@ -14,9 +14,13 @@
 //!
 
 extern crate actix_web;
+extern crate regex;
+extern crate tera;
 
 pub mod tmp_engine;
 pub mod middleware;
+pub mod handlers;
+
 
 #[cfg(test)]
 mod tests {
