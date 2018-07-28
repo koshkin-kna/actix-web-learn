@@ -13,6 +13,7 @@ use std::env;
 
 pub mod app;
 pub mod urls;
+pub mod views;
 
 fn main() {
     #[cfg(debug_assertions)] {
